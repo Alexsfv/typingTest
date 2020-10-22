@@ -1,0 +1,13 @@
+.container {
+    max-width: 1300px;
+    margin: 150px auto 0;
+    padding: 15px;
+    display: flex;
+}
+
+@media all and (max-width: 768px) {
+    .container {
+        margin: 30px auto 0;
+        flex-wrap: wrap;
+    }
+}

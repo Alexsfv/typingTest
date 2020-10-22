@@ -1,0 +1,74 @@
+.textBlock {
+    position: relative;
+    margin: 0 15px;
+    font-size: 0;
+    max-width: 1010px;
+    flex-shrink: 3;
+    flex-grow: 1;
+}
+
+.needText {
+    position: relative;
+    z-index: 3;
+    background-color: rgb(95, 95, 95);
+    color: #fff;
+    padding: 15px;
+    margin: 0;
+    line-height: 1.5;
+    border-radius: 5px 5px 0 0;
+    font-size: 16px;
+}
+
+.word {
+    margin-left: 6px;
+    display: inline-block;
+}
+
+.letter {
+    padding: 0;
+    letter-spacing: 1px;
+    margin: 0;
+    color: #fff;
+
+    &.success {
+        color: rgb(85, 255, 85);
+    }
+
+    &.error {
+        color:rgb(255, 77, 77);
+    }
+}
+
+.userText {
+    width: 100%;
+    resize: vertical;
+    min-height: 100px;
+    max-height: 350px;
+    height: 280px;
+    overflow: auto;
+    padding: 20px;
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    border-radius: 0 0 5px 5px;
+
+    &:focus {
+        outline: none;
+        box-shadow: 4px 4px 9px -2px #00eeff
+    }
+}
+
+@media all and (max-width: 768px) {
+
+    .userText {
+        min-width: 100%;
+        max-width: 100%;
+    
+        max-height: 200px;
+        height: 80px;
+        overflow: auto;
+        padding: 20px;
+        margin: 0 0 15px;
+        font-size: 16px;
+    }
+}

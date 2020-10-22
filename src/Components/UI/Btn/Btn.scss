@@ -1,0 +1,123 @@
+.btn {
+    display: block;
+    width: 100%;
+    line-height: 60px;
+    margin: 0 0 10px;
+    background-color: #fff;
+    text-align: center;
+    text-decoration: none;
+    color: black;
+    font-size: 22px;
+    border-radius: 5px;
+    transition: background 0.3s ease;
+    outline: none;
+    border: none;
+
+    &:hover {
+        background-color: rgb(209, 209, 209);
+        cursor: pointer;
+    }
+
+    &:disabled {
+        cursor: default;
+        background-color: rgb(146, 146, 146);
+        box-shadow: inset -2px 2px 9px black;
+    }
+}
+
+.btn-blue {
+    background-color: rgb(20, 150, 236);
+    color: #fff;
+    transition: background 0.3s ease;
+
+    &:hover {
+    background-color: rgb(65, 178, 253);
+    }
+
+    &:disabled {
+        background-color: rgb(95, 127, 148);
+        color: #000;
+    }
+}
+
+.btn-orange {
+    background-color: rgb(255, 135, 55);
+    color: #fff;
+    transition: background 0.3s ease;
+
+    &:hover {
+        background-color: rgb(255, 161, 98);
+    }
+
+    &:disabled {
+        background-color: rgb(141, 103, 77);
+        color: #000;
+    }
+}
+// background: rgb(237, 255, 75), linear-gradient(45deg,transparent 0%, #fff);
+
+
+.btn-limon {
+    background-color: rgb(237, 255, 75);
+    color: #000;
+    // transition: background 0.3s ease;
+
+    &:hover {
+        background: rgb(236, 250, 111);
+    }
+
+    &:disabled {
+        background:rgb(142, 146, 108);
+    }
+}
+
+.btn-last {
+    margin-top: auto;
+    margin-bottom: 0;
+}
+
+
+
+
+@media all and (max-width: 768px) {
+
+    // .btn-start {
+    //     // display: none;
+    // }
+
+    .btn:last-child {
+        margin-bottom: 10px;
+    }
+}
+
+
+.btn-anim-pulse-scale:not(:disabled) {
+    animation-name: pulse-scale;
+    animation-iteration-count: infinite;
+    animation-duration: .8s;
+    animation-timing-function: ease-in-out;
+    // animation-direction: alternate;
+
+    background: linear-gradient(90deg, transparent, transparent 40%, #fff 70%, transparent 100%),
+    linear-gradient(75deg, rgb(237, 255, 75) , rgb(237, 255, 75));
+    background-repeat: no-repeat, no-repeat;
+    background-position: -102% center, center;
+    background-size: 0% 100%, 100% 100%;
+
+    &:hover {
+        background: linear-gradient(90deg, transparent, transparent 40%, transparent 70%, transparent 100%),
+                    linear-gradient(75deg, rgb(236, 250, 111) ,rgb(236, 250, 111));
+    }
+}
+
+@keyframes pulse-scale{
+    0% {
+        background-position: -102% center, center;
+        background-size: 50% 100%, 100% 100%;
+    }
+
+    100% {
+        background-position: 160% center, center;
+        background-size: 50% 100%, 100% 100%;
+    }
+}

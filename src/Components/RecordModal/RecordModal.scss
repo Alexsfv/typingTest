@@ -1,0 +1,124 @@
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(43, 43, 43, 0.699);
+    z-index: 1000;
+
+    &.active {
+        display: block;
+    }
+}
+
+.record {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    max-width: 400px;
+    width: 100%;
+    padding: 40px 10px 20px;
+    text-align: center;
+    transform: translate(-50%, -50%);
+    background-color: rgb(25, 241, 133);
+    border-radius: 15px;
+}
+
+.record-title {
+    margin: 0 0 20px;
+    color: azure;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.close-result-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: azure;
+    transition: all .3s ease;
+
+    &:hover {
+        cursor: pointer;
+        color: rgb(146, 146, 146);
+    }
+}
+
+.record-name {
+    height: 40px;
+    border: none;
+    width: 60%;
+    padding: 5px 14px;
+    border-radius: 6px;
+    outline: none !important;
+    transition: all .4s ease;
+
+    &.error {
+        border: 2px solid red;
+    }
+}
+
+.record-name:focus {
+    width: 80%;
+    box-shadow: 3px 3px 7px -1px #1496ec;
+
+    &.error {
+        border: none;
+    }
+}
+
+.record-send {
+    display: block;
+    margin: 20px auto 0;
+    padding: 5px 14px;
+    max-width: 200px;
+    height: 30px;
+    border-radius: 6px;
+    font-weight: bold;
+
+    outline: none;
+    box-shadow: none;
+    border: none;
+    background:#fff;
+    transition: all .3s ease;
+}
+
+.record-send:hover {
+    cursor: pointer;
+    box-shadow: 3px 3px 7px -1px #1496ec;
+}
+
+.alert {
+    display: none;
+    color: rgb(255, 255, 255);
+    text-shadow: 1px 1px 6px red;
+    margin: 15px 0 0;
+    padding: 0 5px;
+    font-weight: bold;
+    font-size: 15px;
+    
+    &.active {
+        display: block;
+    }
+}
+
+.sendName-success, .sendName-error {
+    font-weight: bold;
+    margin: 15px 0 3px;
+}
+
+.sendName-success {
+    color: #0081d6;
+}
+
+.sendName-error {
+    color: #db0000;
+}
+
+@media all and(max-width:480px) {
+    .record {
+        max-width: 90vw;
+    }
+}
