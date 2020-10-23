@@ -3,10 +3,13 @@ import './SideBar.scss'
 import '../UI/Btn/Btn.scss'
 import Timer from '../UI/Timer/Timer'
 import {Link} from 'react-router-dom'
+import device from 'current-device'
 
 class SideBar extends React.Component {
     
     render() {
+        const leadersPath = device.type === 'mobile' ? '/leaders/mobile' : '/leaders/desktop'
+
         return (
             <div className='SideBar'>
                 <Timer seconds={this.props.seconds} started={this.props.startedTimer}/>
@@ -36,7 +39,7 @@ class SideBar extends React.Component {
                         Сохранить
                     </button> */}
 
-                    <Link className='btn btn-orange btn-last' to='/leaders'>Лидеры</Link>
+                    <Link className='btn btn-orange btn-last' to={leadersPath}>Лидеры</Link>
                 </div>
 
             </div>

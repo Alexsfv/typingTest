@@ -186,7 +186,10 @@ class Main extends React.Component {
         month = month.length === 1 ? '0' + month : month
         day = day.length === 1 ? '0' + day : day
             
-        return [day, month, year].join('-')
+        return {
+            string: [day, month, year].join('-'),
+            year, month, day
+        }
     }
 
     sendResults = (name) => {
@@ -194,7 +197,7 @@ class Main extends React.Component {
         ///сделать запрос на наличие уже имеющегося sendName
         /// отправить nameValue или вызвать алерт.
         /// поставить статус невалидности
-        const date = this.getTime()
+        // const date = this.getTime()
 
         this.setState({
             recordModal: {
