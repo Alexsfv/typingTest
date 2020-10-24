@@ -1,6 +1,7 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
 import './LeadersBlock.scss'
+import Loader from '../UI/Loader/Loader'
 
 class LeadersBlock extends React.Component {
 
@@ -48,6 +49,10 @@ class LeadersBlock extends React.Component {
                                     <li>{user.date.string}</li>
                                 </ul>
                             ))
+                        }
+
+                        {
+                            this.props.loader ? <Loader classes='leaders-loader'/> : null
                         }
 
                     </div>

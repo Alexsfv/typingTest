@@ -7,6 +7,11 @@
     &.mt-15 {
         margin-top: 15px;
     }
+
+    &.leaders-loader {
+        display: block;
+        margin: 15px auto;
+    }
 }
 
 .lds-ring div {
