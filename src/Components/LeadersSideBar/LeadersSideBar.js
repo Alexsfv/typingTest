@@ -1,6 +1,5 @@
 import React from 'react'
 import {NavLink} from 'react-router-dom'
-// import './LeadersSideBar.scss'
 import device from 'current-device'
 
 class LeadersSideBar extends React.Component {

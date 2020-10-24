@@ -3,7 +3,8 @@ import SideBar from '../Components/SideBar/SideBar'
 import '../Components/Layout/container.scss'
 import TextBlock from '../Components/TextBlock/TextBlock'
 import RecordModal from '../Components/RecordModal/RecordModal'
-
+import {getMobileUser, getDesktopUser, sendMobibleUser, sendDesktopUser} from '../database'
+import device from 'current-device'
 
 class Main extends React.Component {
 
@@ -14,7 +15,7 @@ class Main extends React.Component {
         
         const chars = sentence.trim().split('')
         const words = this.getWords(chars)
-        const maxSeconds = 1
+        const maxSeconds = 5
 
         this.state = {
             timer: {
@@ -35,7 +36,7 @@ class Main extends React.Component {
             recordModal: {
                 result: 0,
                 isShow: false,
-                showTimeout: 1000,
+                hideTimeout: 2000,
                 valid: true,
                 showLoader: false,
                 nameValue: '',
@@ -108,7 +109,7 @@ class Main extends React.Component {
 
     stopTest = () => {
         const perSecond = this.state.area.successWords / this.state.timer.maxSeconds
-        const result = (perSecond * 60).toFixed(1)
+        const result = Math.round(perSecond * 60)
 
         const text = this.getCorrectText(result)
         this.setState(state => ({
@@ -166,7 +167,6 @@ class Main extends React.Component {
 
     changeNameHandler = (e) => {
         const name = e.nativeEvent.target.value + ''
-        console.log(name);
         this.clearValidateName()
 
         this.setState(state => ({
@@ -180,7 +180,7 @@ class Main extends React.Component {
     getTime() {
         const date = new Date()
         const year = date.getFullYear() + ''
-        let month = date.getMonth() + ''
+        let month = date.getMonth() + 1 + ''
         let day = date.getDate() + ''
 
         month = month.length === 1 ? '0' + month : month
@@ -192,71 +192,80 @@ class Main extends React.Component {
         }
     }
 
-    sendResults = (name) => {
-        ///TODO
-        ///сделать запрос на наличие уже имеющегося sendName
-        /// отправить nameValue или вызвать алерт.
-        /// поставить статус невалидности
-        // const date = this.getTime()
-
-        this.setState({
+    hasSameUserName = async (name) => {
+        this.setState(state => ({
             recordModal: {
-                ...this.state.recordModal,
+                ...state.recordModal,
                 showLoader: true,
             }
-        })
-        
-        //success
-        // setTimeout(() => {
-        //     this.setState({
-        //         recordModal: {
-        //             ...this.state.recordModal,
-        //             showLoader: false,
-        //             statusSendName: 'success'
-        //         }
-        //     })
-
-        //     setTimeout(() => {
-        //         this.setState({
-        //             recordModal: {
-        //                 ...this.state.recordModal,
-        //                 isShow: false,
-        //                 statusSendName: ''
-        //             }
-        //         })
-        //     }, 1000);
-
-        // }, 800);
-
-        //Error
-        // setTimeout(() => {
-        //     this.setState({
-        //         recordModal: {
-        //             ...this.state.recordModal,
-        //             showLoader: false,
-        //             statusSendName: 'error'
-        //         }
-        //     })
-
-        //     setTimeout(() => {
-        //         this.setState({
-        //             recordModal: {
-        //                 ...this.state.recordModal,
-        //                 isShow: false,
-        //                 statusSendName: ''
-        //             }
-        //         })
-        //     }, 1000);
-
-        // }, 800);
+        }))
+        const mobileUser = await getMobileUser(name)
+        const desktopUser = await getDesktopUser(name)
+        return (mobileUser === null && desktopUser === null) ? false : true
     }
 
-    clearValidateName = () => {
-        if (!this.state.recordModal.valid) {
+    sendResults = async (name) => {
+        const date = this.getTime()
+        const user = {
+            name,
+            points: this.state.recordModal.result,
+            date,
+        }
+
+        console.log(user);
+        
+
+        try {
+            device.type === 'mobile'
+                ? await sendMobibleUser(user)
+                : await sendDesktopUser(user)
+            
+            this.setState({
+                recordModal: {
+                    ...this.state.recordModal,
+                    showLoader: false,
+                    statusSendName: 'success'
+            }})
+    
+            setTimeout(() => {
+                this.setState({
+                    recordModal: {
+                        ...this.state.recordModal,
+                        isShow: false,
+                        statusSendName: ''
+                    }
+                })
+            }, this.state.recordModal.hideTimeout);
+
+        } catch(e) {
+            console.log(e)
+
+            this.setState({
+                recordModal: {
+                    ...this.state.recordModal,
+                    showLoader: false,
+                    statusSendName: 'error'
+                }
+            })
+
+            setTimeout(() => {
+                this.setState({
+                    recordModal: {
+                        ...this.state.recordModal,
+                        statusSendName: ''
+                    }
+                })
+            }, this.state.recordModal.hideTimeout);
+        }
+    }
+
+    clearValidateName = (forceClean) => {
+        if (!this.state.recordModal.valid || forceClean) {
             this.setState(state => ({
                 recordModal: {
                     ...state.recordModal,
                     valid: true,
+                    showLoader: false,
                     alert: {
                         isShowAlert: false,
                         message: ''
@@ -266,41 +275,42 @@ class Main extends React.Component {
         }
     }
 
-    submitNameHandler = (e) => {
+    submitNameHandler = async (e) => {
         const name = e.nativeEvent.target.userName.value
+        let message
+        let valid = true
 
         if (name.length === 0) {
-            const message = 'Введите имя пользователя'
-            this.setState({
-                recordModal: {
-                    ...this.state.recordModal,
-                    valid:false,
-                    alert: {
-                        isShowAlert: true,
-                        message
-                    }
-                }
-            })
-            return
+            message = 'Введите имя пользователя'
+            valid = false
+
+        } else if (name.length > 18) {
+            message = `Максимальная длинна имени 18 символов, у Вас ${name.length} ${this.getCorrectText(name.length)}`
+            valid = false
+
+        } else if (await this.hasSameUserName(name)) {
+            message = 'Это имя уже занято'
+            valid = false
+        }
+        
+        if (valid === true) {          
+            this.clearValidateName(true)
+            this.sendResults(name)
         }
 
-        if (name.length > 18) {
-            const message = `Максимальная длинна имени 18 символов, у Вас ${name.length} ${this.getCorrectText(name.length)}`
+        if (valid === false) {
             this.setState({
                 recordModal: {
                     ...this.state.recordModal,
                     valid: false,
+                    showLoader: false,
                     alert: {
                         isShowAlert: true,
                         message
                     }
                 }
             })
-            return
-        }
-
-        this.clearValidateName()
-        this.sendResults(name)
+        }   
     }
 
 //Area
@@ -383,7 +393,6 @@ class Main extends React.Component {
                 answeredChars: newAnsweredChars
             }
         }))
-        
     }
 
     render() {
