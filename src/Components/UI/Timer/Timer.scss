@@ -1,4 +1,4 @@
-$duration: 10s;
+$duration: 25s;
 
 .Timer {
     display: block;
@@ -23,6 +23,11 @@ $duration: 10s;
         animation-duration: $duration;
         animation-fill-mode: forwards;
         animation-timing-function: linear;
+    }
+
+    p.finished {
+        animation-name: none;
+        background: linear-gradient(90deg, #fff 0%, #fff 100%);
     }
 }
 

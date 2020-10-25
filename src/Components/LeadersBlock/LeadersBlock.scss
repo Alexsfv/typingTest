@@ -72,6 +72,7 @@
 .Header {
     border-left: 2px solid rgb(4, 159, 248);
     border-right: 2px solid rgb(4, 159, 248);
+    text-transform: uppercase;
 
     li{
 
@@ -93,7 +94,6 @@
     text-align: center;
     background-color: #fff;
     color: rgb(0, 140, 255);
-    text-transform: uppercase;
     font-weight: bold;
     border-bottom: 2px solid rgb(0, 140, 255);
 
