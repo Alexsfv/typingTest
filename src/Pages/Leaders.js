@@ -110,7 +110,6 @@ class Leaders extends React.Component {
 
     render() {
         const [deviceUsers] = this.getUsersByPathName()
-        console.log('RENDER', deviceUsers);
         return (
             <div className="container">
 

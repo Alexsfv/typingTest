@@ -15,7 +15,7 @@ class Main extends React.Component {
         
         const chars = sentence.trim().split('')
         const words = this.getWords(chars)
-        const maxSeconds = 5
+        const maxSeconds = 25
 
         this.state = {
             timer: {
@@ -56,7 +56,6 @@ class Main extends React.Component {
             const timerId = setInterval(() => {
 
                 if (this.state.timer.seconds <= 1 && this.state.timer.seconds > 0) {
-                    clearInterval(timerId)
                     this.stopTest()
                     return
                 }
@@ -110,8 +109,10 @@ class Main extends React.Component {
     stopTest = () => {
         const perSecond = this.state.area.successWords / this.state.timer.maxSeconds
         const result = Math.round(perSecond * 60)
-
         const text = this.getCorrectText(result)
+
+        clearInterval(this.state.timer.intervalId)
+
         this.setState(state => ({
             timer: {
                 ...state.timer,
@@ -210,10 +211,7 @@ class Main extends React.Component {
             name,
             points: this.state.recordModal.result,
             date,
-        }
-
-        console.log(user);
-        
+        }      
 
         try {
             device.type === 'mobile'
@@ -235,7 +233,7 @@ class Main extends React.Component {
                         statusSendName: ''
                     }
                 })
-            }, this.state.recordModal.hideTimeout);
+            }, this.state.recordModal.hideTimeout * 2);
 
         } catch(e) {
             console.log(e)
@@ -276,7 +274,9 @@ class Main extends React.Component {
     }
 
     submitNameHandler = async (e) => {
-        const name = e.nativeEvent.target.userName.value
+        const name = e.nativeEvent.target.userName.value.trim()
+        const depricatedChars = name.split(/[a-zA-ZА-ЯЁа-яё]+|\d+|\s+/g).join('')
+
         let message
         let valid = true
 
@@ -286,6 +286,10 @@ class Main extends React.Component {
 
         } else if (name.length > 18) {
             message = `Максимальная длинна имени 18 символов, у Вас ${name.length} ${this.getCorrectText(name.length)}`
+            valid = false
+
+        } else if (depricatedChars.length > 0) {
+            message = 'Используйте только буквы, цифры и пробел!'
             valid = false
 
         } else if (await this.hasSameUserName(name)) {
@@ -360,11 +364,12 @@ class Main extends React.Component {
     
     handleAreaInput = (e) => {
         const [lastChar, indexChar] = this.getAreaData(e)
+        const isWrittenAll = indexChar >= this.state.area.chars.length - 1
 
         if (!this.state.timer.started) {
             this.startTimer()
         }
-    
+
         const isSuccess = this.state.area.chars[indexChar] === lastChar
         const isWritten = !!(this.state.area.answeredChars[indexChar]) || indexChar < 0
         const className = isSuccess ? 'success' : 'error'
@@ -393,6 +398,10 @@ class Main extends React.Component {
                 answeredChars: newAnsweredChars
             }
         }))
+
+        if (isWrittenAll) {
+            this.stopTest()
+        }
     }
 
     render() {

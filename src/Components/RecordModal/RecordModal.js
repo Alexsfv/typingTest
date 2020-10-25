@@ -47,7 +47,7 @@ class RecordModal extends React.Component {
 
                     {
                         this.props.statusSendName === 'success'
-                            ? <p className='sendName-success'>Спасибо за участие!</p>
+                            ? <p className='sendName-success'>Результат сохранен!<br />Не забудьте сравнить свои результаты в таблице лидеров</p>
                             : this.props.statusSendName === 'error'
                                 ? <p className='sendName-error'>Произошла ошибка!</p>
                                 : null

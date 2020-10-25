@@ -12,7 +12,7 @@ class SideBar extends React.Component {
 
         return (
             <div className='SideBar'>
-                <Timer seconds={this.props.seconds} started={this.props.startedTimer}/>
+                <Timer seconds={this.props.seconds} started={this.props.startedTimer} finishedTimer={this.props.finishedTimer}/>
 
                 <div className="buttons">
                     <button 
@@ -30,14 +30,6 @@ class SideBar extends React.Component {
                     >
                         Сброс
                     </button>
-
-                    {/* <button 
-                        className="btn btn-limon btn-anim-pulse-scale" 
-                        onClick={this.props.stopTimer} 
-                        disabled={this.props.finishedTimer ? false : true}
-                    >
-                        Сохранить
-                    </button> */}
 
                     <Link className='btn btn-orange btn-last' to={leadersPath}>Лидеры</Link>
                 </div>
