@@ -14,9 +14,11 @@ __Основные возможности / особенности:__
 
 - React
     - React Router
+    - react-thunk
+- Redux
 - Firebase
     - Hosting
-    - Database
+    - Database API
 
 
 ## Инициализация  
