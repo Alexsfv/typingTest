@@ -5,7 +5,7 @@ class Author extends React.Component {
 
   render() {
     return (
-        <p className='Author'>v1.0 Safronov.A</p>
+        <p className='Author'>v1.1 Safronov.A</p>
     )
   }
 }

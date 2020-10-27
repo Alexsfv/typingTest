@@ -3,134 +3,56 @@ import SideBar from '../Components/SideBar/SideBar'
 import '../Components/Layout/container.scss'
 import TextBlock from '../Components/TextBlock/TextBlock'
 import RecordModal from '../Components/RecordModal/RecordModal'
-import {getMobileUser, getDesktopUser, sendMobibleUser, sendDesktopUser} from '../database'
-import device from 'current-device'
+import {getMobileUser, getDesktopUser} from '../database'
+import {connect} from 'react-redux'
+import { resetTimer, subtractTimer, 
+        toStartTimer, endTest, 
+        showRecordModal, closeRecordModal, 
+        changeName, showLoader, 
+        sendUser, clearValidateNameField,
+        invalidName, rewriteArea,
+        plusCounertSuccessChars, addAnsweredChar } from '../store/actions/main'
+
 
 class Main extends React.Component {
 
-    constructor(props) {
-        super(props)
-
-        const sentence = 'Едва слышимые в окружающем шуме, звуки музыки доносились из дома, который стоял на окраине. На тело, погружаемое в воду, действует выталкивающая сила, как гласит закон Архимеда.'
-        
-        const chars = sentence.trim().split('')
-        const words = this.getWords(chars)
-        const maxSeconds = 25
-
-        this.state = {
-            timer: {
-                maxSeconds,
-                seconds: maxSeconds,
-                started: false,
-                finished: false,
-                intervalId: null,
-            },
-            area: {
-                value: '',
-                words,
-                chars,
-                answeredChars: [],
-                sentence,
-                successWords: 0,
-            },
-            recordModal: {
-                result: 0,
-                isShow: false,
-                hideTimeout: 2000,
-                valid: true,
-                showLoader: false,
-                nameValue: '',
-                statusSendName: '',
-                alert: {
-                    isShowAlert: false,
-                    message: ''
-                }
-            }
-        }
-    }
-
     startTimer = () => {
-        if (!this.state.timer.finished) {
+        if (!this.props.timer.finished) {
             const delay = 1000
             
             const timerId = setInterval(() => {
 
-                if (this.state.timer.seconds <= 1 && this.state.timer.seconds > 0) {
-                    this.stopTest()
+                if (this.props.timer.seconds <= 1 && this.props.timer.seconds > 0) {
+                    this.stopTest(1)
                     return
                 }
     
-                this.setState({
-                    timer: {
-                        ...this.state.timer,
-                        seconds: this.state.timer.seconds - 1
-                    }
-                })
+                this.props.subtractTimer()
             }, delay); 
 
-            this.setState(state => ({
-                timer: {...state.timer, started: true, intervalId: timerId}
-            }))
+            this.props.toStartTimer(timerId)
         }
     }
 
     resetTimer = () => {
-        clearInterval(this.state.timer.intervalId)
-        this.setState({
-            timer: {
-                ...this.state.timer,
-                seconds: this.state.timer.maxSeconds,
-                started: false,
-                finished: false,
-                intervalId: null,
-            },
-            area: {
-                ...this.state.area,
-                value: '',
-                answeredChars: [],
-            },
-            recordModal: {
-                ...this.state.recordModal,
-                result: 0,
-                isShow: false,
-                valid: true,
-                showLoader: false,
-                statusSendName: '',
-                nameValue: '',
-                alert: {
-                    ...this.state.recordModal.alert.isShowAlert.alert,
-                    isShowAlert: false,
-                    message: ''
-                }
-            }
-        })
+        clearInterval(this.props.timer.intervalId)
+        this.props.resetTimer()
     }
 
-    stopTest = () => {
-        const perSecond = this.state.area.successWords / this.state.timer.maxSeconds
+    stopTest = (delaySeconds = 0) => {
+        const perSecond = this.props.area.successChars / (this.props.timer.maxSeconds - this.props.timer.seconds + delaySeconds)
         const result = Math.round(perSecond * 60)
         const text = this.getCorrectText(result)
 
-        clearInterval(this.state.timer.intervalId)
+        clearInterval(this.props.timer.intervalId)
 
-        this.setState(state => ({
-            timer: {
-                ...state.timer,
-                seconds: 0,
-                finished: true
-            },
-            recordModal: {
-                ...state.recordModal,
-                result,
-                text
-            }
-        }))
+        this.props.endTest(result, text)
+
         setTimeout(() => {
-            this.showRecordModal()
-        }, this.state.recordModal.showTimeout);
+            this.props.showRecordModal()
+        }, this.props.recordModal.showTimeout);
     }
 
-    ///Modal
     getCorrectText(num) {
         const stringNumber = num + ''
         const lastNum = +stringNumber.slice(-1)
@@ -145,37 +67,11 @@ class Main extends React.Component {
         }
     }
 
-    showRecordModal = () => {
-        this.setState(state => ({
-            recordModal: {
-                ...state.recordModal,
-                isShow: true,
-                nameValue: ''
-            }
-        }))
-    }
-
-    closeRecordModal = () => {
-        this.setState(state => ({
-            recordModal: {
-                ...state.recordModal,
-                isShow: false,
-                statusSendName: '',
-                nameValue: ''
-            }
-        }))
-    }
-
     changeNameHandler = (e) => {
         const name = e.nativeEvent.target.value + ''
         this.clearValidateName()
 
-        this.setState(state => ({
-            recordModal: {
-                ...state.recordModal,
-                nameValue: name,
-            }
-        }))
+        this.props.changeName(name)
     }
 
     getTime() {
@@ -194,82 +90,27 @@ class Main extends React.Component {
     }
 
     hasSameUserName = async (name) => {
-        this.setState(state => ({
-            recordModal: {
-                ...state.recordModal,
-                showLoader: true,
-            }
-        }))
+        this.props.showLoader()
+
         const mobileUser = await getMobileUser(name)
         const desktopUser = await getDesktopUser(name)
         return (mobileUser === null && desktopUser === null) ? false : true
     }
 
-    sendResults = async (name) => {
+    sendResults = name => {
         const date = this.getTime()
         const user = {
             name,
-            points: this.state.recordModal.result,
+            points: this.props.recordModal.result,
             date,
         }      
 
-        try {
-            device.type === 'mobile'
-                ? await sendMobibleUser(user)
-                : await sendDesktopUser(user)
-            
-            this.setState({
-                recordModal: {
-                    ...this.state.recordModal,
-                    showLoader: false,
-                    statusSendName: 'success'
-            }})
-    
-            setTimeout(() => {
-                this.setState({
-                    recordModal: {
-                        ...this.state.recordModal,
-                        isShow: false,
-                        statusSendName: ''
-                    }
-                })
-            }, this.state.recordModal.hideTimeout * 2);
-
-        } catch(e) {
-            console.log(e)
-
-            this.setState({
-                recordModal: {
-                    ...this.state.recordModal,
-                    showLoader: false,
-                    statusSendName: 'error'
-                }
-            })
-
-            setTimeout(() => {
-                this.setState({
-                    recordModal: {
-                        ...this.state.recordModal,
-                        statusSendName: ''
-                    }
-                })
-            }, this.state.recordModal.hideTimeout);
-        }
+        this.props.sendUser(user)
     }
 
     clearValidateName = (forceClean) => {
-        if (!this.state.recordModal.valid || forceClean) {
-            this.setState(state => ({
-                recordModal: {
-                    ...state.recordModal,
-                    valid: true,
-                    showLoader: false,
-                    alert: {
-                        isShowAlert: false,
-                        message: ''
-                    }
-                }
-            }))
+        if (!this.props.recordModal.valid || forceClean) {
+            this.props.clearValidateNameField()
         }
     }
 
@@ -303,43 +144,12 @@ class Main extends React.Component {
         }
 
         if (valid === false) {
-            this.setState({
-                recordModal: {
-                    ...this.state.recordModal,
-                    valid: false,
-                    showLoader: false,
-                    alert: {
-                        isShowAlert: true,
-                        message
-                    }
-                }
-            })
+            this.props.invalidName(message)
         }   
     }
 
-//Area
-    getWords(chars) {
-        let words = []
-        let lastIndex = 0
-
-        chars.forEach((char, i, arr) => {
-
-            if (char === ' ') {
-                const sliced = chars.slice(lastIndex, i + 1)
-                words.push(sliced.join(''))
-                lastIndex += sliced.length
-
-            } else if (i === arr.length - 1) {
-                const sliced = chars.slice(lastIndex)
-                words.push(sliced.join(''))
-            }
-
-        })
-        return words
-    }
-
     getAreaData = (e) => {
-        const valueOfState = this.state.area.value
+        const valueOfState = this.props.area.value
         let inputValue = e.nativeEvent.target.value
         const lastChar = inputValue.slice(-1)
 
@@ -351,27 +161,20 @@ class Main extends React.Component {
         }
         const indexChar = inputValue.length - 1
 
-        this.setState(state => ({
-            ...state,
-            area: {
-                ...state.area,
-                value: inputValue,
-            }
-        }))
-    
+        this.props.rewriteArea(inputValue)
         return [lastChar, indexChar]
     }
     
     handleAreaInput = (e) => {
         const [lastChar, indexChar] = this.getAreaData(e)
-        const isWrittenAll = indexChar >= this.state.area.chars.length - 1
+        const isWrittenAll = indexChar >= this.props.area.chars.length - 1
 
-        if (!this.state.timer.started) {
+        if (!this.props.timer.started) {
             this.startTimer()
         }
 
-        const isSuccess = this.state.area.chars[indexChar] === lastChar
-        const isWritten = !!(this.state.area.answeredChars[indexChar]) || indexChar < 0
+        const isSuccess = this.props.area.chars[indexChar] === lastChar
+        const isWritten = !!(this.props.area.answeredChars[indexChar]) || indexChar < 0
         const className = isSuccess ? 'success' : 'error'
     
         if (isWritten) {
@@ -379,25 +182,13 @@ class Main extends React.Component {
         }
     
         if (className === 'success') {
-            this.setState(state => ({
-                ...state,
-                area: {
-                    ...state.area,
-                    successWords: state.area.successWords + 1
-                }
-            }))
+            this.props.plusCounertSuccessChars()
         }
     
-        const newAnsweredChars = [...this.state.area.answeredChars]
+        const newAnsweredChars = [...this.props.area.answeredChars]
         newAnsweredChars.push({index: indexChar, class: className})
     
-        this.setState(state => ({
-            ...state,
-            area: {
-                ...state.area,
-                answeredChars: newAnsweredChars
-            }
-        }))
+        this.props.addAnsweredChar(newAnsweredChars)
 
         if (isWrittenAll) {
             this.stopTest()
@@ -410,36 +201,36 @@ class Main extends React.Component {
                 <div className='container'>
                     <SideBar 
                         className='sideBar'
-                        startedTimer={this.state.timer.started}
-                        finishedTimer={this.state.timer.finished}
-                        seconds={this.state.timer.seconds}
+                        startedTimer={this.props.timer.started}
+                        finishedTimer={this.props.timer.finished}
+                        seconds={this.props.timer.seconds}
                         startTimer={this.startTimer}
                         resetTimer={this.resetTimer}
                     />
 
                     <TextBlock
                         startTimer={this.startTimer}
-                        isDisabledArea={this.state.timer.finished}
+                        isDisabledArea={this.props.timer.finished}
 
                         changeAreaValue={this.changeAreaValue}
-                        area={this.state.area}
+                        area={this.props.area}
                         handleAreaInput={this.handleAreaInput}
                     />
                 </div>
 
                 <RecordModal 
-                    isShow={this.state.recordModal.isShow}
-                    closeRecordModal={this.closeRecordModal}
-                    result={this.state.recordModal.result}
-                    text={this.state.recordModal.text}
+                    isShow={this.props.recordModal.isShow}
+                    closeRecordModal={this.props.closeRecordModal}
+                    result={this.props.recordModal.result}
+                    text={this.props.recordModal.text}
                     sendUserName={this.sendUserName}
                     submitNameHandler={this.submitNameHandler}
                     clearValidateName={this.clearValidateName}
-                    isShowAlert={this.state.recordModal.alert.isShowAlert}
-                    alertMessage={this.state.recordModal.alert.message}
-                    showLoader={this.state.recordModal.showLoader}
-                    statusSendName={this.state.recordModal.statusSendName}
-                    nameValue={this.state.recordModal.nameValue}
+                    isShowAlert={this.props.recordModal.alert.isShowAlert}
+                    alertMessage={this.props.recordModal.alert.message}
+                    showLoader={this.props.recordModal.showLoader}
+                    statusSendName={this.props.recordModal.statusSendName}
+                    nameValue={this.props.recordModal.nameValue}
                     changeNameHandler={this.changeNameHandler}
                 />
 
@@ -448,4 +239,32 @@ class Main extends React.Component {
     }
 }
 
-export default Main
+function mapStateToProps(state) {
+    return {
+        timer: state.main.timer,
+        area: state.main.area,
+        recordModal: state.main.recordModal
+    }
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        subtractTimer: () => dispatch(subtractTimer()),
+        toStartTimer: timerId => dispatch(toStartTimer(timerId)),
+        resetTimer: () => dispatch(resetTimer()),
+        endTest: (result, text) => dispatch(endTest(result, text)),
+        showRecordModal: () => dispatch(showRecordModal()),
+        closeRecordModal: () => dispatch(closeRecordModal()),
+        changeName: name => dispatch(changeName(name)),
+        showLoader: () => dispatch(showLoader()),
+        sendUser: user => dispatch(sendUser(user)),
+        clearValidateNameField: () => dispatch(clearValidateNameField()),
+        invalidName: message => dispatch(invalidName(message)),
+        rewriteArea: value => dispatch(rewriteArea(value)),
+        plusCounertSuccessChars: () => dispatch(plusCounertSuccessChars()),
+        addAnsweredChar: newChars => dispatch(addAnsweredChar(newChars))
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Main)
+
