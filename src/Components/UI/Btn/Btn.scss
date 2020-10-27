@@ -54,13 +54,10 @@
         color: #000;
     }
 }
-// background: rgb(237, 255, 75), linear-gradient(45deg,transparent 0%, #fff);
-
 
 .btn-limon {
     background-color: rgb(237, 255, 75);
     color: #000;
-    // transition: background 0.3s ease;
 
     &:hover {
         background: rgb(236, 250, 111);
@@ -81,10 +78,6 @@
 
 @media all and (max-width: 768px) {
 
-    // .btn-start {
-    //     // display: none;
-    // }
-
     .btn:last-child {
         margin-bottom: 10px;
     }
@@ -96,7 +89,6 @@
     animation-iteration-count: infinite;
     animation-duration: .8s;
     animation-timing-function: ease-in-out;
-    // animation-direction: alternate;
 
     background: linear-gradient(90deg, transparent, transparent 40%, #fff 70%, transparent 100%),
     linear-gradient(75deg, rgb(237, 255, 75) , rgb(237, 255, 75));

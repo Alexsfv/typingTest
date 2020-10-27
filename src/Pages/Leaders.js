@@ -2,37 +2,15 @@ import React from 'react'
 import LeadersSideBar from '../Components/LeadersSideBar/LeadersSideBar'
 import LeadersBlock from '../Components/LeadersBlock/LeadersBlock'
 import '../Components/Layout/container.scss'
-import {getMobileUsers, getDesktopUsers} from '../database'
+import {connect} from 'react-redux'
+import { getUsers, sortUsers } from '../store/actions/leaders'
 
 class Leaders extends React.Component {
 
-  constructor(props) {
-    super(props)
-
-    this.state = {
-      sideBar: {
-
-      },
-
-      leaders: {      
-        users: {
-          mobileUsers: [],
-          desktopUsers: [],
-          sorted: false
-        },
-
-        loader: true,
-
-      },
-
-
-    }
-  }
-
     sortUsersBy = (category = 'name') => {
-    let [mobileUsers, desktopUsers] = [[...this.state.leaders.users.mobileUsers], [...this.state.leaders.users.desktopUsers]]
+    let [mobileUsers, desktopUsers] = [[...this.props.leaders.users.mobileUsers], [...this.props.leaders.users.desktopUsers]]
     const [, usersByDevice] = this.getUsersByPathName()
-    const sorted = this.state.leaders.users.sorted ? 1 : -1
+    const sorted = this.props.leaders.users.sorted ? 1 : -1
     const sortedUsers = {mobileUsers, desktopUsers}
 
     if (category === 'points') {
@@ -48,7 +26,6 @@ class Leaders extends React.Component {
     } else if (category === 'date') {
         sortedUsers[usersByDevice] = sortedUsers[usersByDevice].sort((a,b) => {
         if (+a.date.year - +b.date.year !== 0) {
-            console.log(+a.date.year - +b.date.year);
             return sorted * (+a.date.year - +b.date.year)
         } 
         if (+a.date.month - +b.date.month  !== 0) {
@@ -60,52 +37,17 @@ class Leaders extends React.Component {
         return 0
         })
     }
-
-    this.setState({
-        leaders: {
-        ...this.state.leaders,
-        users: {
-            ...this.state.leaders.users,
-            mobileUsers: sortedUsers.mobileUsers,
-            desktopUsers: sortedUsers.desktopUsers,
-            sorted: !this.state.leaders.users.sorted
-        }
-        }
-    })
-
-
+    this.props.sortUsers(sortedUsers)
     }
 
     getUsersByPathName = () => {
     return this.props.location.pathname === "/leaders/desktop" 
-                ? [this.state.leaders.users.desktopUsers, 'desktopUsers']
-                : [this.state.leaders.users.mobileUsers, 'mobileUsers']
+                ? [this.props.leaders.users.desktopUsers, 'desktopUsers']
+                : [this.props.leaders.users.mobileUsers, 'mobileUsers']
     }
 
-    componentDidMount = async () => {
-        try {
-            const rowMobileUsers = await getMobileUsers()
-            const rowDesktopUsers = await getDesktopUsers()
-
-            const mobileUsers = Object.values(rowMobileUsers)
-            const desktopUsers = Object.values(rowDesktopUsers)
-
-            this.setState({
-                leaders: {
-                    ...this.state.leaders,
-                    users: {
-                        ...this.state.leaders.users,
-                        mobileUsers,
-                        desktopUsers
-                    },
-                    loader: false,
-                }
-            })
-
-        } catch(e) {
-            console.log(e)
-        }
-
+    componentDidMount = () => {
+        this.props.getUsers()
     }
 
     render() {
@@ -119,12 +61,25 @@ class Leaders extends React.Component {
                 <LeadersBlock
                     deviceUsers={deviceUsers}
                     sortUsersBy={this.sortUsersBy}
-                    loader={this.state.leaders.loader}
+                    loader={this.props.leaders.loader}
                 />
-            
+                           
             </div>
         )
     }
 }
 
-export default Leaders
+function mapStateToProps(state) {
+    return {
+        leaders: state.leaders
+    }
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        getUsers: () => dispatch(getUsers()),
+        sortUsers: sortedUsers => dispatch(sortUsers(sortedUsers))
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Leaders)
